@@ -14,13 +14,13 @@ if __name__ == '__main__':
 
     family_tree_data = FamilyTreeData()
 
-    with open(args.in_file, mode='r', encoding='utf-8-sig') as input_stream:
-        ext = os.path.splitext(args.in_file)[1]
-        if ext == '.ged':
+    ext = os.path.splitext(args.in_file)[1]
+    if ext == '.ged':
+        with open(args.in_file, mode='r', encoding='utf-8-sig') as input_stream:
             transmission = GedcomTransmission()
             transmission.recv(input_stream)
             family_tree_data.from_gedcom_transmission(transmission)
-        else:
-            raise Exception('Files of extension "%s" not supported.' % ext)
+    else:
+        raise Exception('Files of extension "%s" are not yet supported.' % ext)
 
     # TODO: Analyze family_tree_data as requested.

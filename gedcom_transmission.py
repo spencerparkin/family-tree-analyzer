@@ -43,6 +43,15 @@ class GedcomTransmission(object):
             self.record_list.append(line_stack[0])
         for line in self.record_list:
             line.patch_pointer(xref_map)
+        for line in self.record_list:
+            line.delete_metadata()
 
     def send(self, output_stream):
-        pass
+        metadata_map = {'next_id': 0}
+        for line in self.record_list:
+            line.generate_metadata(metadata_map)
+        level = 0
+        for line in self.record_list:
+            line.print(output_stream, level)
+        for line in self.record_list:
+            line.delete_metadata()
