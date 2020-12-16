@@ -9,6 +9,13 @@ class Person(object):
         self.mother = None
         self.father = None
         self.name = ''
+        self.birthday = None
+        self.deathday = None
+        self.baptism_date = None
+        self.endownment_date = None
+        self.sealing_to_spouse_date = None
+        self.sealing_to_parents_date = None
+        self.born_in_the_covenant = None
 
 class MalePerson(Person):
     def __init__(self):

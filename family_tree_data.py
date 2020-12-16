@@ -2,6 +2,7 @@
 
 from gedcom_exception import GedcomException
 from family_tree_person import MalePerson, FemalePerson
+from datetime import datetime
 
 class FamilyTreeData(object):
     def __init__(self):
@@ -38,6 +39,21 @@ class FamilyTreeData(object):
     def to_gedcom_transmission(self):
         raise GedcomException('Not yet implimented.')
 
+    def generate_datetime(self, date_line):
+        if date_line is not None:
+            date_text = ' '.join(date_line.value)
+            date_format_list = [
+                '%d %b %Y',
+                '%Y'
+            ]
+            for date_format in date_format_list:
+                try:
+                    date_obj = datetime.strptime(date_text, date_format)
+                    return date_obj
+                except ValueError as ve:
+                    pass
+        return None
+
     def generate_gedcom_person(self, record):
         sex_line = record.find_sub_line('SEX')
         if sex_line is None:
@@ -55,6 +71,32 @@ class FamilyTreeData(object):
             raise GedcomException('Failed to find NAME field in person record.')
 
         person.name = ' '.join(name_line.value).replace('/', '')
+
+        birth_line = record.find_sub_line('BIRT')
+        if birth_line is not None:
+            person.birthday = self.generate_datetime(birth_line.find_sub_line('DATE'))
+
+        death_line = record.find_sub_line('DEAT')
+        if death_line is not None:
+            person.deathday = self.generate_datetime(death_line.find_sub_line('DATE'))
+
+        # Note that this is not needed if the child was a stillborn.
+        baptism_line = record.find_sub_line('BAPL')
+        if baptism_line is not None:
+            person.baptism_date = self.generate_datetime(baptism_line.find_sub_line('DATE'))
+
+        endownment_line = record.find_sub_line('ENDL')
+        if endownment_line is not None:
+            person.endownment_date = self.generate_datetime(endownment_line.find_sub_line('DATE'))
+
+        sealing_to_spouse_line = record.find_sub_line('SLGS')
+        if sealing_to_spouse_line is not None:
+            person.sealing_to_spouse_date = self.generate_datetime(sealing_to_spouse_line.find_sub_line('DATE'))
+
+        # Note that this is not needed if the child is born in the covenant.
+        sealing_to_parents_line = record.find_sub_line('SLGC')
+        if sealing_to_parents_line is not None:
+            person.sealing_to_parents_date = self.generate_datetime(sealing_to_parents_line.find_sub_line('DATE'))
 
         return person
 
