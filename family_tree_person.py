@@ -6,6 +6,7 @@ class Person(object):
     # of concerns, no file-format-specific code should exist here.
 
     def __init__(self):
+        super().__init__()
         self.mother = None
         self.father = None
         self.name = ''
@@ -16,11 +17,14 @@ class Person(object):
         self.sealing_to_spouse_date = None
         self.sealing_to_parents_date = None
         self.born_in_the_covenant = None
+        self.family_search_id = None
 
 class MalePerson(Person):
     def __init__(self):
+        super().__init__()
         self.spouse_list = []
 
 class FemalePerson(Person):
     def __init__(self):
+        super().__init__()
         self.child_list = []

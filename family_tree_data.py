@@ -7,6 +7,7 @@ from datetime import datetime
 class FamilyTreeData(object):
     def __init__(self):
         self.person_list = []
+        self.family_search_index = {}
 
     def from_gedcom_transmission(self, transmission):
         # Decypher the given GEDCOM transmission in terms of the Lineage-Linked Grammmar.
@@ -35,6 +36,12 @@ class FamilyTreeData(object):
                 self.patch_gedcom_person_relationships(record, person_map)
 
         self.person_list = [person_map[key] for key in person_map]
+
+        # Build an index by family search's family tree ID.
+        self.family_search_index = {}
+        for person in self.person_list:
+            if person.family_search_id is not None:
+                self.family_search_index[person.family_search_id] = person
 
     def to_gedcom_transmission(self):
         raise GedcomException('Not yet implimented.')
@@ -97,6 +104,10 @@ class FamilyTreeData(object):
         sealing_to_parents_line = record.find_sub_line('SLGC')
         if sealing_to_parents_line is not None:
             person.sealing_to_parents_date = self.generate_datetime(sealing_to_parents_line.find_sub_line('DATE'))
+
+        family_search_id_line = record.find_sub_line('_FSFTID')
+        if family_search_id_line is not None:
+            person.family_search_id = family_search_id_line.value[0]
 
         return person
 
