@@ -23,4 +23,6 @@ if __name__ == '__main__':
     else:
         raise Exception('Files of extension "%s" are not yet supported.' % ext)
 
+    print('Found %d people in family tree.' % len(family_tree_data.person_list))
+
     # TODO: Analyze family_tree_data as requested.

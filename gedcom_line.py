@@ -72,3 +72,23 @@ class GedcomLine(object):
         output_stream.write(line_text)
         for line in self.sub_line_list:
             self.print(output_stream, level + 1)
+
+    def find_sub_line(self, tag_name):
+        if self.tag == tag_name:
+            return self
+        for line in self.sub_line_list:
+            found_line = line.find_sub_line(tag_name)
+            if found_line is not None:
+                return found_line
+
+    def find_all_sub_lines(self, tag_name, line_list):
+        if self.tag == tag_name:
+            line_list.append(self)
+        for line in self.sub_line_list:
+            self.find_all_sub_lines(tag_name, line_list)
+
+    def for_all_sub_lines(self, tag_name):
+        if self.tag == tag_name:
+            yield self
+        for line in self.sub_line_list:
+            yield from line.for_all_sub_lines(tag_name)
