@@ -10,6 +10,7 @@ class Relationship(object):
     def __str__(self):
         if len(self.path) == 0:
             return 'you'
+        # TODO: Reduce path when possible.  E.g., your father's spouse's son becomes your brother.
         return 'your ' + ' '.join([part + '\'s' for part in self.path[:-1]] + [self.path[-1]])
 
 class FamilyTreeWalker(object):

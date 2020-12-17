@@ -1,7 +1,7 @@
 # family_tree_data.py
 
 from gedcom_exception import GedcomException
-from family_tree_person import MalePerson, FemalePerson
+from family_tree_person import MalePerson, FemalePerson, Person
 from datetime import datetime
 
 class FamilyTreeData(object):
@@ -64,9 +64,8 @@ class FamilyTreeData(object):
     def generate_gedcom_person(self, record):
         sex_line = record.find_sub_line('SEX')
         if sex_line is None:
-            raise GedcomException('Failed to find SEX field in person record.')
-
-        if sex_line.value[0] == 'M':
+            person = Person()
+        elif sex_line.value[0] == 'M':
             person = MalePerson()
         elif sex_line.value[0] == 'F':
             person = FemalePerson()
@@ -113,20 +112,21 @@ class FamilyTreeData(object):
 
     def patch_gedcom_person_relationships(self, family_record, person_map):
         husband_record = family_record.find_sub_line('HUSB')
-        if husband_record is None:
-            raise GedcomException('Failed to find HUSB field in family record.')
-
         wife_record = family_record.find_sub_line('WIFE')
-        if wife_record is None:
-            raise GedcomException('Failed to find WIFE field in family record.')
 
-        husband = person_map[hex(id(husband_record.pointer))]
-        wife = person_map[hex(id(wife_record.pointer))]
+        if husband_record is not None:
+            husband = person_map[hex(id(husband_record.pointer))]
 
-        husband.spouse_list.append(wife)
+        if wife_record is not None:
+            wife = person_map[hex(id(wife_record.pointer))]
+
+        if husband_record is not None and wife_record is not None:
+            husband.spouse_list.append(wife)
 
         for child_record in family_record.for_all_sub_lines('CHIL'):
             child = person_map[hex(id(child_record.pointer))]
-            wife.child_list.append(child)
-            child.mother = wife
-            child.father = husband
+            if wife_record is not None:
+                wife.child_list.append(child)
+                child.mother = wife
+            if husband_record is not None:
+                child.father = husband
