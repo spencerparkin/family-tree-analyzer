@@ -27,7 +27,9 @@ class FamilyTreeWalker(object):
         queue = [relationship]
         while len(queue) > 0:
             relationship = queue.pop()
-            self.visit(relationship)
+            keep_going = self.visit(relationship)
+            if not keep_going:
+                break
             person = relationship.person
             visitation_set.add(person)
             if self.max_relationship_path_length == -1 or len(relationship.path) < self.max_relationship_path_length:
@@ -50,4 +52,4 @@ class FamilyTreeWalker(object):
 
     def visit(self, relationship):
         if self.visitation_func is not None:
-            self.visitation_func(relationship, self.visitation_data)
+            return self.visitation_func(relationship, self.visitation_data)

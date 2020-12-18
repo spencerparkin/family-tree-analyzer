@@ -9,6 +9,15 @@ class SearchResults(object):
         self.no_endownment_list = []
         self.no_sealing_to_parents_list = []
         self.no_sealing_to_spouse_list = []
+        self.max_results = 15
+
+    def max_results_reached(self):
+        total = 0
+        total += len(self.no_baptism_list)
+        total += len(self.no_endownment_list)
+        total += len(self.no_sealing_to_parents_list)
+        total += len(self.no_sealing_to_spouse_list)
+        return True if total >= self.max_results else False
 
     def conditionally_accumulate(self, relationship):
         person = relationship.person

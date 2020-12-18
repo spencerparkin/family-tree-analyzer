@@ -47,7 +47,10 @@ if __name__ == '__main__':
     search_results = SearchResults()
 
     def visitation_func(relationship, search_results):
+        if search_results.max_results_reached():
+            return False
         search_results.conditionally_accumulate(relationship)
+        return True
 
     print('Searching for deceased relatives needing proxy work...')
     walker = FamilyTreeWalker(root_person)
