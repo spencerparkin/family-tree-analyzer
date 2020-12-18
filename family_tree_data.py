@@ -86,10 +86,14 @@ class FamilyTreeData(object):
         if death_line is not None:
             person.deathday = self.generate_datetime(death_line.find_sub_line('DATE'))
 
-        # Note that this is not needed if the child was a stillborn.
+        # Note that this is not needed if the child died before reaching the age of accountability.
         baptism_line = record.find_sub_line('BAPL')
         if baptism_line is not None:
             person.baptism_date = self.generate_datetime(baptism_line.find_sub_line('DATE'))
+            status_line = baptism_line.find_sub_line('STAT')
+            if status_line is not None:
+                if status_line.value[0] == 'CHILD' or status_line.value[0] == 'STILLBORN':
+                    person.died_before_eight = True
 
         endownment_line = record.find_sub_line('ENDL')
         if endownment_line is not None:
@@ -103,6 +107,10 @@ class FamilyTreeData(object):
         sealing_to_parents_line = record.find_sub_line('SLGC')
         if sealing_to_parents_line is not None:
             person.sealing_to_parents_date = self.generate_datetime(sealing_to_parents_line.find_sub_line('DATE'))
+            status_line = sealing_to_parents_line.find_sub_line('STAT')
+            if status_line is not None:
+                if status_line.value[0] == 'BIC':
+                    person.born_in_the_covenant = True
 
         family_search_id_line = record.find_sub_line('_FSFTID')
         if family_search_id_line is not None:

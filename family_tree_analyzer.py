@@ -2,14 +2,19 @@
 
 import os
 import argparse
+import sys
+
+sys.path.append(r'E:\git_repos\pyMath2D')
 
 from family_tree_data import FamilyTreeData
 from family_tree_walker import FamilyTreeWalker
 from gedcom_transmission import GedcomTransmission
+from search_results import SearchResults
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Analyze family tree data.')
+    parser = argparse.ArgumentParser(description='Analyze family tree data to determine persons needing LDS ordinances by proxy.')
     parser.add_argument('--inFile', dest='in_file', help='Read the given file; typically a GEDCOM file.')
+    parser.add_argument('--outFile', dest='out_file', help='Write the given file; this can be a text file or an image file.')
     parser.add_argument('--rootID', dest='root_id', help='Family search ID of person that is the starting-point for a search performed in the family tree.')
 
     args = parser.parse_args()
@@ -39,22 +44,24 @@ if __name__ == '__main__':
     if root_person is None:
         raise Exception('No root person given for search.')
 
-    # I'm not sure how to just pass the count variable by reference as part of the closure.
-    # TODO: Sort our findings by path-length.
-    visitation_data = {'count': 0}
-    def visitation_func(relationship, visitation_data):
-        person = relationship.person
-        if person.baptism_date is None and person.deathday is not None:
-            print('-------------------------------')
-            print('Name: ' + person.name)
-            print('ID: ' + str(person.family_search_id))
-            print('Relationship: ' + str(relationship))
-            visitation_data['count'] += 1
+    search_results = SearchResults()
 
-    print('Deceased persons in your tree who do not have a baptismal date listed...')
+    def visitation_func(relationship, search_results):
+        search_results.conditionally_accumulate(relationship)
+
+    print('Searching for deceased relatives needing proxy work...')
     walker = FamilyTreeWalker(root_person)
     walker.visitation_func = visitation_func
-    walker.visitation_data = visitation_data
+    walker.visitation_data = search_results
     walker.walk()
-    print('-------------------------------')
-    print('Found %d persons.' % visitation_data['count'])
+
+    print('Generating report file "%s"...' % args.out_file)
+    ext = os.path.splitext(args.out_file)[1]
+    if ext == '.txt':
+        search_results.generate_text_file(args.out_file)
+    elif ext == '.csv':
+        search_results.generate_csv_file(args.out_file)
+    elif ext == '.png':
+        search_results.generate_png_file(args.out_file, root_person)
+    else:
+        raise Exception('File extension "%s" not supported.' % ext)
