@@ -38,9 +38,13 @@ class SearchResults(object):
         print('Generating render tree...')
         visitation_set = set()
         root_node = root_person.generate_render_tree(visitation_set)
+        size_before = root_node.calculate_size()
 
         #print('Pruning render tree...')
         #root_node.prune_tree(person_subset)
+        #size_after = root_node.calculate_size()
+        #percentage = 100.0 * size_after / size_before
+        #print('Tree reduced to %d%% of it\'s former size.' % percentage)
 
         print('Calculating tree layout...')
         root_node.calculate_graph_layout()

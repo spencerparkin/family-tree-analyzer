@@ -13,6 +13,12 @@ class RenderNode(object):
         self.label_box = AxisAlignedRectangle()
         self.bounding_box = None
 
+    def calculate_size(self):
+        size = 0
+        for node in self.all_nodes():
+            size += 1
+        return size
+
     def render_graph(self, image):
         image_rect = AxisAlignedRectangle(Vector(0.0, 0.0), Vector(float(image.width), float(image.height)))
         world_rect = self.bounding_box.Copy()
