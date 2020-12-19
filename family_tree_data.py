@@ -2,7 +2,7 @@
 
 from gedcom_exception import GedcomException
 from family_tree_person import MalePerson, FemalePerson, Person
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class FamilyTreeData(object):
     def __init__(self):
@@ -51,7 +51,8 @@ class FamilyTreeData(object):
             date_text = ' '.join(date_line.value)
             date_format_list = [
                 '%d %b %Y',
-                '%Y'
+                '%Y',
+                'ABT %Y'
             ]
             for date_format in date_format_list:
                 try:
@@ -72,6 +73,10 @@ class FamilyTreeData(object):
         else:
             raise GedcomException('SEX field of person was neither "M" nor "F".')
 
+        family_search_id_line = record.find_sub_line('_FSFTID')
+        if family_search_id_line is not None:
+            person.family_search_id = family_search_id_line.value[0]
+
         name_line = record.find_sub_line('NAME')
         if name_line is None:
             raise GedcomException('Failed to find NAME field in person record.')
@@ -85,6 +90,12 @@ class FamilyTreeData(object):
         death_line = record.find_sub_line('DEAT')
         if death_line is not None:
             person.deathday = self.generate_datetime(death_line.find_sub_line('DATE'))
+
+        if person.birthday is not None and person.deathday is not None:
+            life_span = person.deathday - person.birthday
+            eight_years = timedelta(days=365 * 8)
+            if life_span < eight_years:
+                person.died_before_eight = True
 
         # Note that this is not needed if the child died before reaching the age of accountability.
         baptism_line = record.find_sub_line('BAPL')
@@ -111,10 +122,6 @@ class FamilyTreeData(object):
             if status_line is not None:
                 if status_line.value[0] == 'BIC':
                     person.born_in_the_covenant = True
-
-        family_search_id_line = record.find_sub_line('_FSFTID')
-        if family_search_id_line is not None:
-            person.family_search_id = family_search_id_line.value[0]
 
         return person
 

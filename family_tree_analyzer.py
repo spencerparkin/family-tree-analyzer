@@ -4,7 +4,7 @@ import os
 import argparse
 import sys
 
-sys.path.append(r'E:\git_repos\pyMath2D')
+sys.path.append(r'D:\git_repos\pyMath2D')
 
 from family_tree_data import FamilyTreeData
 from family_tree_walker import FamilyTreeWalker
