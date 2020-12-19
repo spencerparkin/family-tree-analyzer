@@ -2,7 +2,7 @@
 
 from gedcom_exception import GedcomException
 from family_tree_person import MalePerson, FemalePerson, Person
-from datetime import datetime, timedelta
+from datetime import datetime
 
 class FamilyTreeData(object):
     def __init__(self):
@@ -50,9 +50,12 @@ class FamilyTreeData(object):
         if date_line is not None:
             date_text = ' '.join(date_line.value)
             date_format_list = [
-                '%d %b %Y',
                 '%Y',
-                'ABT %Y'
+                'ABT %Y',
+                '%B %Y',
+                '%b %Y',
+                '%d %B %Y',
+                '%d %b %Y'
             ]
             for date_format in date_format_list:
                 try:
@@ -93,8 +96,7 @@ class FamilyTreeData(object):
 
         if person.birthday is not None and person.deathday is not None:
             life_span = person.deathday - person.birthday
-            eight_years = timedelta(days=365 * 8)
-            if life_span < eight_years:
+            if life_span.days < 365 * 8:
                 person.died_before_eight = True
 
         # Note that this is not needed if the child died before reaching the age of accountability.
