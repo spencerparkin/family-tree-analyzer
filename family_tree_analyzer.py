@@ -65,6 +65,6 @@ if __name__ == '__main__':
     elif ext == '.csv':
         search_results.generate_csv_file(args.out_file)
     elif ext == '.png':
-        search_results.generate_png_file(args.out_file, root_person)
+        search_results.generate_png_files(args.out_file, root_person)
     else:
         raise Exception('File extension "%s" not supported.' % ext)
