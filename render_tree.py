@@ -19,14 +19,14 @@ class RenderNode(object):
             size += 1
         return size
 
-    def render_graph(self, draw, image, font):
+    def render_graph(self, draw, image, font, person_subset):
         image_rect = AxisAlignedRectangle(Vector(0.0, 0.0), Vector(float(image.width), float(image.height)))
         world_rect = self.bounding_box.Copy()
         world_rect.ExpandToMatchAspectRatioOf(image_rect)
         for node in self.all_nodes():
             node.render_edges(draw, font, image_rect, world_rect)
         for node in self.all_nodes():
-            node.render_label_box(draw, font, image_rect, world_rect)
+            node.render_label_box(draw, font, image_rect, world_rect, person_subset)
 
     def render_edges(self, draw, font, image_rect, world_rect):
         point_a = world_rect.Map(self.label_box.Center(), image_rect)
@@ -38,10 +38,11 @@ class RenderNode(object):
             text_size = draw.textsize(text=key, font=font)
             draw.text((point_c.x - text_size[0] / 2, point_c.y - text_size[1] / 2), text=key, font=font, fill=(0, 0, 0))
 
-    def render_label_box(self, draw, font, image_rect, world_rect):
+    def render_label_box(self, draw, font, image_rect, world_rect, person_subset):
         point_a = world_rect.Map(self.label_box.min_point, image_rect)
         point_b = world_rect.Map(self.label_box.max_point, image_rect)
-        draw.rectangle((point_a.x, point_a.y, point_b.x, point_b.y), fill=(32, 32, 32))
+        color = (32, 80, 23) if self.person in person_subset else (32, 32, 32)
+        draw.rectangle((point_a.x, point_a.y, point_b.x, point_b.y), fill=color)
         polygon = self.label_box.GeneratePolygon()
         for world_line in polygon.GenerateLineSegments():
             image_line = world_rect.Map(world_line, image_rect)

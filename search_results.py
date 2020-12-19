@@ -113,5 +113,5 @@ class SearchResults(object):
             root_node.calculate_bounding_box()
 
             print('Rendering tree to image file "%s"...' % image_file_path)
-            root_node.render_graph(draw, image, font)
+            root_node.render_graph(draw, image, font, person_subset)
             image.save(image_file_path)
