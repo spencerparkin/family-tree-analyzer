@@ -89,7 +89,7 @@ class SearchResults(object):
             path, ext = os.path.splitext(out_file)
             image_file_path = path + '_' + search_group.__class__.__name__ + ext
 
-            image = Image.new('RGBA', (2048, 2048), (255, 255, 255, 0))
+            image = Image.new('RGBA', (4096, 4096), (255, 255, 255, 0))
             draw = ImageDraw.Draw(image)
 
             person_subset = {root_person}
@@ -104,7 +104,7 @@ class SearchResults(object):
             root_node.prune_tree(person_subset)
             size_after = root_node.calculate_size()
             percentage = 100.0 * size_after / size_before
-            print('Tree reduced to %2.2f%% of it\'s former size.' % percentage)
+            print('Tree reduced to %2.2f%% of its former size.' % percentage)
 
             # TODO: Branches can still be shortened in several ways.
 

@@ -94,10 +94,18 @@ class FamilyTreeData(object):
         if death_line is not None:
             person.deathday = self.generate_datetime(death_line.find_sub_line('DATE'))
 
-        if person.birthday is not None and person.deathday is not None:
-            life_span = person.deathday - person.birthday
-            if life_span.days < 365 * 8:
-                person.died_before_eight = True
+        christening_line = record.find_sub_line('CHR')
+        if christening_line is not None:
+            person.christening_date = self.generate_datetime(christening_line.find_sub_line('DATE'))
+
+        if person.deathday is not None:
+            if person.birthday is not None:
+                life_span = person.deathday - person.birthday
+            elif person.christening_date is not None:
+                life_span = person.deathday - person.christening_date
+            else:
+                life_span = None
+            person.died_before_eight = life_span is not None and life_span.days < 365 * 8
 
         # Note that this is not needed if the child died before reaching the age of accountability.
         baptism_line = record.find_sub_line('BAPL')

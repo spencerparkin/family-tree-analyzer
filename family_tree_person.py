@@ -14,6 +14,7 @@ class Person(object):
         self.name = ''
         self.birthday = None
         self.deathday = None
+        self.christening_date = None
         self.baptism_date = None
         # TODO: Do we need an initiatory date?
         self.endownment_date = None

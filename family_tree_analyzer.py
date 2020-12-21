@@ -4,7 +4,7 @@ import os
 import argparse
 import sys
 
-sys.path.append(r'D:\git_repos\pyMath2D')
+sys.path.append(r'C:\git_repos\pyMath2D')
 
 from family_tree_data import FamilyTreeData
 from family_tree_walker import FamilyTreeWalker
@@ -42,7 +42,9 @@ if __name__ == '__main__':
         root_person = family_tree_data.family_search_index[key]
 
     if root_person is None:
-        raise Exception('No root person given for search.')
+        root_person = family_tree_data.person_list[0]
+
+    print('Root person: "%s"' % root_person.name)
 
     search_results = SearchResults()
 
