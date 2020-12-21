@@ -16,6 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('--inFile', dest='in_file', help='Read the given file; typically a GEDCOM file.')
     parser.add_argument('--outFile', dest='out_file', help='Write the given file; this can be a text file or an image file.')
     parser.add_argument('--rootID', dest='root_id', help='Family search ID of person that is the starting-point for a search performed in the family tree.')
+    parser.add_argument('--maxResults', dest='max_search_results', help='Maximum number of people to show per result tree.')
 
     args = parser.parse_args()
 
@@ -47,6 +48,8 @@ if __name__ == '__main__':
     print('Root person: "%s"' % root_person.name)
 
     search_results = SearchResults()
+    if args.max_search_results is not None:
+        search_results.max_results = int(args.max_search_results)
 
     def visitation_func(relationship, search_results):
         if search_results.max_results_reached():
