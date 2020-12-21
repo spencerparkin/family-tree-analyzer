@@ -8,10 +8,11 @@ class Relationship(object):
         self.path = path
 
     def __str__(self):
-        if len(self.path) == 0:
-            return 'you'
-        # TODO: Reduce path when possible.  E.g., your father's spouse's son becomes your brother.
-        return 'your ' + ' '.join([part + '\'s' for part in self.path[:-1]] + [self.path[-1]])
+        # TODO: Convert path into human-readable sentence.
+        return ''
+
+    def spouse_in_path(self):
+        return any(['spouse' == component[0] for component in self.path])
 
 class FamilyTreeWalker(object):
     def __init__(self, root_person):
@@ -33,22 +34,19 @@ class FamilyTreeWalker(object):
             person = relationship.person
             visitation_set.add(person)
             if self.max_relationship_path_length == -1 or len(relationship.path) < self.max_relationship_path_length:
-                if not self.avoid_inlaws or 'spouse' not in relationship.path:
+                if not self.avoid_inlaws or not relationship.spouse_in_path():
                     if person.mother is not None and person.mother not in visitation_set:
-                        queue.append(Relationship(person.mother, relationship.path + ['mother']))
+                        queue.append(Relationship(person.mother, relationship.path + [('mother', -1)]))
                     if person.father is not None and person.father not in visitation_set:
-                        queue.append(Relationship(person.father, relationship.path + ['father']))
+                        queue.append(Relationship(person.father, relationship.path + [('father', -1)]))
                 if hasattr(person, 'spouse_list'):
-                    for spouse in person.spouse_list:
+                    for i, spouse in enumerate(person.spouse_list):
                         if spouse not in visitation_set:
-                            queue.append(Relationship(spouse, relationship.path + ['spouse']))
+                            queue.append(Relationship(spouse, relationship.path + [('spouse', i)]))
                 if hasattr(person, 'child_list'):
-                    for child in person.child_list:
+                    for i, child in enumerate(person.child_list):
                         if child not in visitation_set:
-                            if isinstance(child, MalePerson):
-                                queue.append(Relationship(child, relationship.path + ['son']))
-                            elif isinstance(child, FemalePerson):
-                                queue.append(Relationship(child, relationship.path + ['daughter']))
+                            queue.append(Relationship(child, relationship.path + [('child', i)]))
 
     def visit(self, relationship):
         if self.visitation_func is not None:

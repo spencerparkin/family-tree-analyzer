@@ -4,7 +4,7 @@ import os
 import argparse
 import sys
 
-sys.path.append(r'C:\git_repos\pyMath2D')
+sys.path.append(r'E:\git_repos\pyMath2D')
 
 from family_tree_data import FamilyTreeData
 from family_tree_walker import FamilyTreeWalker
@@ -67,6 +67,6 @@ if __name__ == '__main__':
     elif ext == '.csv':
         search_results.generate_csv_file(args.out_file)
     elif ext == '.png':
-        search_results.generate_png_files(args.out_file, root_person)
+        search_results.generate_png_files(args.out_file, root_person, True)
     else:
         raise Exception('File extension "%s" not supported.' % ext)

@@ -3,6 +3,7 @@
 import os
 
 from PIL import Image, ImageDraw, ImageFont
+from render_tree import RenderNode
 
 class SearchGroup(object):
     def __init__(self):
@@ -70,20 +71,8 @@ class SearchResults(object):
     def generate_csv_file(self, out_file):
         raise Exception('Not yet implimented')
 
-    def generate_png_files(self, out_file, root_person):
+    def generate_png_files(self, out_file, root_person, use_optimal_paths):
         font = ImageFont.truetype('JetBrainsFonts/static/JetBrainsMono-Regular.ttf')
-
-        # BEGIND EBUG
-        #image = Image.new('RGBA', (2048, 2048), (255, 255, 255, 0))
-        #draw = ImageDraw.Draw(image)
-        #visitation_set = set()
-        #root_node = root_person.generate_render_tree(visitation_set)
-        #root_node.calculate_graph_layout(draw, font)
-        #root_node.calculate_bounding_box()
-        #root_node.render_graph(draw, image, font)
-        #image.save(out_file)
-        #return
-        # END DEBUG
 
         for search_group in self.search_group_list:
             path, ext = os.path.splitext(out_file)
@@ -92,21 +81,33 @@ class SearchResults(object):
             image = Image.new('RGBA', (4096, 4096), (255, 255, 255, 0))
             draw = ImageDraw.Draw(image)
 
+            print('Generating render tree...')
+
             person_subset = {root_person}
             person_subset = person_subset.union({relationship.person for relationship in search_group.relationship_list})
 
-            print('Generating render tree...')
-            visitation_set = set()
-            root_node = root_person.generate_render_tree(visitation_set)
-            size_before = root_node.calculate_size()
-
-            print('Pruning render tree...')
-            root_node.prune_tree(person_subset)
-            size_after = root_node.calculate_size()
-            percentage = 100.0 * size_after / size_before
-            print('Tree reduced to %2.2f%% of its former size.' % percentage)
-
-            # TODO: Branches can still be shortened in several ways.
+            if use_optimal_paths:
+                # The relationship paths should be of optimal (minimal) length, because
+                # they were built using a breadth-first search of the family tree.
+                # This is an additive method.
+                root_node = RenderNode(person=root_person)
+                for relationship in search_group.relationship_list:
+                    root_node.construct_using_path(relationship.path)
+                size = root_node.calculate_size()
+                print('Render tree size: %d' % size)
+            else:
+                # This is one way to generate the render tree, but it does not necessarily result
+                # in optimal paths.  I'm keeping it around, because it is interesting (and perhaps
+                # unsettling) to see how I can be related to people on both my mother and father's
+                # side of the family tree.  This is a subtractive method.
+                visitation_set = set()
+                root_node = root_person.generate_render_tree(visitation_set)
+                size_before = root_node.calculate_size()
+                print('Pruning render tree...')
+                root_node.prune_tree(person_subset)
+                size_after = root_node.calculate_size()
+                percentage = 100.0 * size_after / size_before
+                print('Tree reduced to %2.2f%% of its former size.' % percentage)
 
             print('Calculating tree layout...')
             root_node.calculate_graph_layout(draw, font)

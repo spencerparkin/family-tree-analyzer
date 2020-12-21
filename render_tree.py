@@ -111,3 +111,30 @@ class RenderNode(object):
         for node in self.all_nodes():
             if node.person in person_set:
                 return True
+
+    # TODO: Write an optimizer for the tree.  E.g., your father's spouse's son is just your brother.
+    #       Note that some people can't be removed from the tree if they fall within a given set.
+    #       E.g., the set of people we want to see in the tree.
+
+    def construct_using_path(self, path, i=0):
+        if i < len(path):
+            component = path[i]
+            if component[0] == 'mother':
+                next_person = self.person.mother
+                key = 'Mother'
+            elif component[0] == 'father':
+                next_person = self.person.father
+                key = 'Father'
+            elif component[0] == 'child':
+                next_person = self.person.child_list[component[1]]
+                key = 'Child %d' % (component[1] + 1)
+            elif component[0] == 'spouse':
+                next_person = self.person.spouse_list[component[1]]
+                key = 'Spouse %d' % (component[1] + 1)
+            else:
+                raise Exception('Unknown component: %s' % component[0])
+
+            if key not in self.sub_node_map:
+                self.sub_node_map[key] = RenderNode(person=next_person)
+
+            self.sub_node_map[key].construct_using_path(path, i + 1)
