@@ -43,6 +43,14 @@ class SealingToSpouseNeededGroup(SearchGroup):
 
     def is_match(self, relationship):
         person = relationship.person
+
+        # Try to weed out cases where the individual most likely was
+        # not sealed to a spouse because they just died too young.
+        if not person.had_any_children():
+            life_span = person.calc_life_span()
+            if life_span is not None and life_span.days < 365 * 13:
+                return False
+
         return person.sealing_to_spouse_date is None
 
 class SearchResults(object):

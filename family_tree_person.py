@@ -35,6 +35,18 @@ class Person(object):
     def post_load_fixup(self):
         pass
 
+    def calc_life_span(self):
+        life_span = None
+        if self.deathday is not None:
+            if self.birthday is not None:
+                life_span = self.deathday - self.birthday
+            elif self.christening_date is not None:
+                life_span = self.deathday - self.christening_date
+        return life_span
+
+    def had_any_children(self):
+        return False
+
 class MalePerson(Person):
     def __init__(self):
         super().__init__()
@@ -49,6 +61,13 @@ class MalePerson(Person):
                 i += 1
         return render_node
 
+    def had_any_children(self):
+        for spouse in self.spouse_list:
+            for child in spouse.child_list:
+                if child.father == self:
+                    return True
+        return False
+
 class FemalePerson(Person):
     def __init__(self):
         super().__init__()
@@ -62,3 +81,10 @@ class FemalePerson(Person):
                 render_node.sub_node_map['child_%d' % i] = child.generate_render_tree(visitation_set)
                 i += 1
         return render_node
+
+    def post_load_fixup(self):
+        if any([child.mother != self for child in self.child_list]):
+            raise Exception('Mother had someone else\'s child.')
+
+    def had_any_children(self):
+        return True if len(self.child_list) > 0 else False
