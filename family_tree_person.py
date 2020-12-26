@@ -4,8 +4,7 @@ from render_tree import RenderNode
 
 class Person(object):
     # This class and its derivatives provide a data-structure independent
-    # of any kind of genealogical file format (e.g., GEDCOM.)  By separation
-    # of concerns, no file-format-specific code should exist here.
+    # of any kind of genealogical file format (e.g., GEDCOM.)
 
     def __init__(self):
         super().__init__()
@@ -32,6 +31,9 @@ class Person(object):
         if self.father and not hex(id(self.father)) in visitation_set:
             render_node.sub_node_map['father'] = self.father.generate_render_tree(visitation_set)
         return render_node
+
+    def post_load_fixup(self):
+        pass
 
 class MalePerson(Person):
     def __init__(self):

@@ -10,7 +10,7 @@ class FamilyTreeData(object):
         self.family_search_index = {}
 
     def from_gedcom_transmission(self, transmission):
-        # Decypher the given GEDCOM transmission in terms of the Lineage-Linked Grammmar.
+        # Decypher the given GEDCOM transmission in terms of the Lineage-Linked Grammar.
         # At the time of this writing, not all information is gathered into our internal data-structure.
 
         if len(transmission.record_list) == 0:
@@ -24,6 +24,7 @@ class FamilyTreeData(object):
         if trailer.tag != 'TRLR':
             raise GedcomException('Did not find trailer record.')
 
+        # Go load all the individual records.
         person_map = {}
         for record in transmission.record_list:
             if record.tag == 'INDI':
@@ -42,6 +43,10 @@ class FamilyTreeData(object):
         for person in self.person_list:
             if person.family_search_id is not None:
                 self.family_search_index[person.family_search_id] = person
+
+        # Lastly, do any needed post-load processing.
+        for person in self.person_list:
+            person.post_load_fixup()
 
     def to_gedcom_transmission(self):
         raise GedcomException('Not yet implimented.')
@@ -120,10 +125,6 @@ class FamilyTreeData(object):
         if endownment_line is not None:
             person.endownment_date = self.generate_datetime(endownment_line.find_sub_line('DATE'))
 
-        sealing_to_spouse_line = record.find_sub_line('SLGS')
-        if sealing_to_spouse_line is not None:
-            person.sealing_to_spouse_date = self.generate_datetime(sealing_to_spouse_line.find_sub_line('DATE'))
-
         # Note that this is not needed if the child is born in the covenant.
         sealing_to_parents_line = record.find_sub_line('SLGC')
         if sealing_to_parents_line is not None:
@@ -155,3 +156,15 @@ class FamilyTreeData(object):
                 child.mother = wife
             if husband_record is not None:
                 child.father = husband
+
+        sealing_to_spouse_line = family_record.find_sub_line('SLGS')
+        if sealing_to_spouse_line is not None:
+            sealing_to_spouse_date = self.generate_datetime(sealing_to_spouse_line.find_sub_line('DATE'))
+            if sealing_to_spouse_date is not None:
+                if husband is not None:
+                    husband.sealing_to_spouse_date = sealing_to_spouse_date
+                if wife is not None:
+                    wife.sealing_to_spouse_date = sealing_to_spouse_date
+                    for child in wife.child_list:
+                        if child.birthday is not None:
+                            child.born_in_the_covenant = True if child.birthday > sealing_to_spouse_date else False
