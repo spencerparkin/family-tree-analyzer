@@ -17,6 +17,8 @@ if __name__ == '__main__':
     parser.add_argument('--outFile', dest='out_file', help='Write the given file; this can be a text file or an image file.')
     parser.add_argument('--rootID', dest='root_id', help='Family search ID of person that is the starting-point for a search performed in the family tree.')
     parser.add_argument('--maxResults', dest='max_search_results', help='Maximum number of people to show per result tree.')
+    parser.add_argument('--avoidInlaws', dest='avoid_inlaws', help='Avoid searching up through ancestors of in-laws.', action='store_true')
+    parser.add_argument('--avoidSpouses', dest='avoid_spouses', help='Avoid searching spouses (and therefore also children) of any ancestor.', action='store_true')
 
     args = parser.parse_args()
 
@@ -61,6 +63,8 @@ if __name__ == '__main__':
     walker = FamilyTreeWalker(root_person)
     walker.visitation_func = visitation_func
     walker.visitation_data = search_results
+    walker.avoid_inlaws = args.avoid_inlaws
+    walker.avoid_spouses = args.avoid_spouses
     walker.walk()
 
     print('Generating report file "%s"...' % args.out_file)

@@ -21,6 +21,7 @@ class FamilyTreeWalker(object):
         self.visitation_data = None
         self.max_relationship_path_length = -1
         self.avoid_inlaws = True
+        self.avoid_spouses = False
 
     def walk(self):
         visitation_set = set()
@@ -39,7 +40,7 @@ class FamilyTreeWalker(object):
                         queue.append(Relationship(person.mother, relationship.path + [('mother', -1)]))
                     if person.father is not None and person.father not in visitation_set:
                         queue.append(Relationship(person.father, relationship.path + [('father', -1)]))
-                if hasattr(person, 'spouse_list'):
+                if hasattr(person, 'spouse_list') and not self.avoid_spouses:
                     for i, spouse in enumerate(person.spouse_list):
                         if spouse not in visitation_set:
                             queue.append(Relationship(spouse, relationship.path + [('spouse', i)]))
