@@ -41,7 +41,9 @@ class RenderNode(object):
     def render_label_box(self, draw, font, image_rect, world_rect, person_subset):
         point_a = world_rect.Map(self.label_box.min_point, image_rect)
         point_b = world_rect.Map(self.label_box.max_point, image_rect)
-        color = (32, 80, 23) if self.person in person_subset else (32, 32, 32)
+        color = (80, 32, 32) if self.person in person_subset else (32, 32, 32)
+        if self.person.any_proxy_work_available:
+            color = (32, 80, 23)
         draw.rectangle((point_a.x, point_a.y, point_b.x, point_b.y), fill=color)
         polygon = self.label_box.GeneratePolygon()
         for world_line in polygon.GenerateLineSegments():

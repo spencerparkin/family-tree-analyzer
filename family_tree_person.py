@@ -1,9 +1,8 @@
 # family_tree_person.py
 
-import requests
+import time
 
 from render_tree import RenderNode
-from lxml import etree
 
 class Person(object):
     # This class and its derivatives provide a data-structure independent
@@ -25,6 +24,7 @@ class Person(object):
         self.born_in_the_covenant = None
         self.died_before_eight = None
         self.family_search_id = None
+        self.any_proxy_work_available = False
 
     def generate_render_tree(self, visitation_set):
         visitation_set.add(hex(id(self)))
@@ -50,24 +50,42 @@ class Person(object):
     def had_any_children(self):
         return False
 
-    def web_scrape(self):
+    def consume_scrape_cache(self, scrape_cache):
+        if self.family_search_id in scrape_cache:
+            info = scrape_cache[self.family_search_id]
+            for ordinance in info:
+                status = info[ordinance]
+                if status == 'Ready':
+                    self.any_proxy_work_available = True
+                    break
+
+    def web_scrape(self, driver, scrape_cache):
+        # This is a bit insane and I'm not sure how ethical it is to thrash the website either.
+        # I'm not scraping every person in my family tree; just those in my search results.
+        # I want to know if ordinance work is already in progress or if it can be reserved.
+
+        info = scrape_cache[self.family_search_id] if self.family_search_id in scrape_cache else {}
+
         url = 'https://www.familysearch.org/tree/person/ordinances/%s' % self.family_search_id
-        print('Requesting URL: ' + url)
-        headers = {'Content-Type': 'text/html'}
-        request = requests.get(url, headers=headers)
-        html_text = request.text
-        print('Parsering HTML...')
-        html_parser = etree.HTMLParser()
-        html_tree = etree.fromstring(html_text, html_parser)
-        print('Analyzing HTML...')
-        xpath = '//fs-tree-person-ordinance'
-        html_node = html_tree.xpath(xpath)
-        # Alas, this will never work.  I was naive to think I could just fetch the page.
-        # That won't work, because the page is dynamically generates client-side as well
-        # as probably server-side too.  What you might be able to do is open the page
-        # in an external browser, and then use Selenium to browse the page procedurally.
-        # This is certainly more time-consuming, but it would work.
-        html_node = None
+        driver.get(url)
+        time.sleep(2)
+
+        shadow_element = driver.execute_script('return document.querySelector("#main-content-section > fs-person-page").shadowRoot')
+        shadow_element = driver.execute_script('return arguments[0].querySelector("#pages > fs-tree-person-ordinance-list").shadowRoot', shadow_element)
+        shadow_element = driver.execute_script('return arguments[0].querySelector("fs-tree-person-ordinances").shadowRoot', shadow_element)
+        row_element_list = shadow_element.find_elements_by_class_name('ordinance-table-row')
+
+        for row_element in row_element_list:
+            element = driver.execute_script('return arguments[0].querySelector("fs-tree-person-ordinance").shadowRoot', row_element)
+            element = element.find_element_by_class_name('ordLabelText')
+            text = element.text
+            text_list = text.split('\n')
+            if len(text_list) == 2:
+                ordinance = text_list[0]
+                status = text_list[1]
+                info[ordinance] = status
+
+        scrape_cache[self.family_search_id] = info
 
 class MalePerson(Person):
     def __init__(self):

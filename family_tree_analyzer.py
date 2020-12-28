@@ -3,6 +3,7 @@
 import os
 import argparse
 import sys
+import json
 
 sys.path.append(r'C:\git_repos\pyMath2D')
 
@@ -19,7 +20,9 @@ if __name__ == '__main__':
     parser.add_argument('--maxResults', dest='max_search_results', help='Maximum number of people to show per result tree.')
     parser.add_argument('--avoidInlaws', dest='avoid_inlaws', help='Avoid searching up through ancestors of in-laws.', action='store_true')
     parser.add_argument('--avoidSpouses', dest='avoid_spouses', help='Avoid searching spouses (and therefore also children) of any ancestor.', action='store_true')
-    parser.add_argument('--webScrape', dest='web_scrape', help='Scrape search results from FamilySearch.org for additional information.', action='store_true')
+    parser.add_argument('--webScrape', dest='web_scrape', help='Rather than generate a report, scrape search results from FamilySearch.org for additional information which can be used in subsequent invocations.', action='store_true')
+    parser.add_argument('--username', dest='username', help='Provide FamilySearch.org username for scraping.')
+    parser.add_argument('--password', dest='password', help='Provide FamilySearch.org password for scraping.')
 
     args = parser.parse_args()
 
@@ -37,6 +40,16 @@ if __name__ == '__main__':
         raise Exception('Files of extension "%s" are not yet supported.' % ext)
 
     print('Found %d people in the family tree.' % len(family_tree_data.person_list))
+
+    scrape_cache = {}
+    scrape_cache_file = os.path.join(os.getcwd(), 'scrape_cache.json')
+    if os.path.exists(scrape_cache_file):
+        with open(scrape_cache_file, 'r') as handle:
+            json_text = handle.read()
+            scrape_cache = json.loads(json_text)
+
+    for person in family_tree_data.person_list:
+        person.consume_scrape_cache(scrape_cache)
 
     root_person = None
     if args.root_id is not None:
@@ -70,15 +83,49 @@ if __name__ == '__main__':
 
     if args.web_scrape:
         print('Web scraping search results...')
-        search_results.web_scrape()
 
-    print('Generating report file "%s"...' % args.out_file)
-    ext = os.path.splitext(args.out_file)[1]
-    if ext == '.txt':
-        search_results.generate_text_file(args.out_file)
-    elif ext == '.csv':
-        search_results.generate_csv_file(args.out_file)
-    elif ext == '.png':
-        search_results.generate_png_files(args.out_file, root_person, True)
+        # Add directory to path where web-driver executables can be found for Selenium.
+        # These are servers that act as the intermediary/abstraction-layer between our
+        # script (which uses the selenium API) and the actual browser.
+        web_drivers_dir = os.path.join(os.getcwd(), 'web_drivers')
+        path = os.environ['PATH']
+        path_list = path.split(';')
+        path_list.append(web_drivers_dir)
+        path = ';'.join(path_list)
+        os.environ['PATH'] = path
+
+        from selenium import webdriver
+        driver = webdriver.Chrome()
+
+        driver.get('https://www.familysearch.org/en/')
+        element = driver.find_element_by_xpath('//*[@id="signInLink"]')
+        element.click()
+
+        element = driver.find_element_by_xpath('//*[@id="userName"]')
+        element.send_keys(args.username)
+
+        element = driver.find_element_by_xpath('//*[@id="password"]')
+        element.send_keys(args.password)
+
+        element = driver.find_element_by_xpath('//*[@id="login"]')
+        element.click()
+
+        search_results.web_scrape(driver, scrape_cache)
+        driver.close()
+
+        with open(scrape_cache_file, 'w') as handle:
+            json_text = json.dumps(scrape_cache, indent=4)
+            handle.write(json_text)
+
+        print('Wrote scrape cache to file: ' + scrape_cache_file)
     else:
-        raise Exception('File extension "%s" not supported.' % ext)
+        print('Generating report file "%s"...' % args.out_file)
+        ext = os.path.splitext(args.out_file)[1]
+        if ext == '.txt':
+            search_results.generate_text_file(args.out_file)
+        elif ext == '.csv':
+            search_results.generate_csv_file(args.out_file)
+        elif ext == '.png':
+            search_results.generate_png_files(args.out_file, root_person, True)
+        else:
+            raise Exception('File extension "%s" not supported.' % ext)

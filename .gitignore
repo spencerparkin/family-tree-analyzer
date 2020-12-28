@@ -133,3 +133,6 @@ dmypy.json
 
 # Generated images...
 image_*.png
+
+# Ignore web-scrape cache, because it might have sensative info.
+scrape_cache.json
