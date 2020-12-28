@@ -73,6 +73,18 @@ class SearchResults(object):
                 if search_group.is_match(relationship) and len(search_group.relationship_list) < self.max_results:
                     search_group.relationship_list.append(relationship)
 
+    def web_scrape(self):
+        all_people = set()
+        for search_group in self.search_group_list:
+            all_people = all_people.union({relationship.person for relationship in search_group.relationship_list})
+        total_people = len(all_people)
+        print('Total people in search results: %d' % total_people)
+        i = 0
+        for person in all_people:
+            i += 1
+            print('(%d/%d) Scraping additional info for: %s' % (i, total_people, person.name))
+            person.web_scrape()
+
     def generate_text_file(self, out_file):
         raise Exception('Not yet implimented')
 

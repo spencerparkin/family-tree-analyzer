@@ -1,6 +1,9 @@
 # family_tree_person.py
 
+import requests
+
 from render_tree import RenderNode
+from lxml import etree
 
 class Person(object):
     # This class and its derivatives provide a data-structure independent
@@ -46,6 +49,25 @@ class Person(object):
 
     def had_any_children(self):
         return False
+
+    def web_scrape(self):
+        url = 'https://www.familysearch.org/tree/person/ordinances/%s' % self.family_search_id
+        print('Requesting URL: ' + url)
+        headers = {'Content-Type': 'text/html'}
+        request = requests.get(url, headers=headers)
+        html_text = request.text
+        print('Parsering HTML...')
+        html_parser = etree.HTMLParser()
+        html_tree = etree.fromstring(html_text, html_parser)
+        print('Analyzing HTML...')
+        xpath = '//fs-tree-person-ordinance'
+        html_node = html_tree.xpath(xpath)
+        # Alas, this will never work.  I was naive to think I could just fetch the page.
+        # That won't work, because the page is dynamically generates client-side as well
+        # as probably server-side too.  What you might be able to do is open the page
+        # in an external browser, and then use Selenium to browse the page procedurally.
+        # This is certainly more time-consuming, but it would work.
+        html_node = None
 
 class MalePerson(Person):
     def __init__(self):

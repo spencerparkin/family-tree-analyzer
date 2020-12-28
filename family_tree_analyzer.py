@@ -19,6 +19,7 @@ if __name__ == '__main__':
     parser.add_argument('--maxResults', dest='max_search_results', help='Maximum number of people to show per result tree.')
     parser.add_argument('--avoidInlaws', dest='avoid_inlaws', help='Avoid searching up through ancestors of in-laws.', action='store_true')
     parser.add_argument('--avoidSpouses', dest='avoid_spouses', help='Avoid searching spouses (and therefore also children) of any ancestor.', action='store_true')
+    parser.add_argument('--webScrape', dest='web_scrape', help='Scrape search results from FamilySearch.org for additional information.', action='store_true')
 
     args = parser.parse_args()
 
@@ -66,6 +67,10 @@ if __name__ == '__main__':
     walker.avoid_inlaws = args.avoid_inlaws
     walker.avoid_spouses = args.avoid_spouses
     walker.walk()
+
+    if args.web_scrape:
+        print('Web scraping search results...')
+        search_results.web_scrape()
 
     print('Generating report file "%s"...' % args.out_file)
     ext = os.path.splitext(args.out_file)[1]
