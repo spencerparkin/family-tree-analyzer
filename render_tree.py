@@ -116,7 +116,7 @@ class RenderNode(object):
 
     # TODO: Write an optimizer for the tree.  E.g., your father's spouse's son is just your brother.
     #       Note that some people can't be removed from the tree if they fall within a given set.
-    #       E.g., the set of people we want to see in the tree.
+    #       I.e., the set of people we want to see in the tree.
 
     def construct_using_path(self, path, i=0):
         if i < len(path):
